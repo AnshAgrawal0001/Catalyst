@@ -1,195 +1,161 @@
-"use client";
-import React, { useState } from "react";
-import { useForm } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
-import * as Yup from "yup";
+'use client'
 
-interface FormValues {
-  fullName: string;
-  mobileNumber: string;
-  email: string;
-  gender: "male" | "female" | "other";
-  password: string;
-}
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import * as z from "zod"
+import { Button } from "@/components/ui/button"
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+import { Checkbox } from "@/components/ui/checkbox"
+import Link from "next/link"
 
-const SignUpForm: React.FC = () => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
+const formSchema = z.object({
+  name: z.string().min(2, {
+    message: "Name must be at least 2 characters.",
+  }),
+  email: z.string().email({
+    message: "Please enter a valid email address.",
+  }),
+  phone: z.string().min(10, {
+    message: "Please enter a valid phone number.",
+  }),
+  college: z.string().min(2, {
+    message: "College name must be at least 2 characters.",
+  }),
+  password: z.string().min(8, {
+    message: "Password must be at least 8 characters.",
+  }),
+  rememberMe: z.boolean().default(false),
+})
 
-  // Define validation schema using Yup
-  const validationSchema = Yup.object().shape({
-    fullName: Yup.string().required("Full name is required"),
-    mobileNumber: Yup.string()
-      .matches(/^[0-9]{10}$/, "Mobile number must be 10 digits")
-      .required("Mobile number is required"),
-    email: Yup.string()
-      .email("Invalid email address")
-      .required("Email is required"),
-    gender: Yup.string()
-      .oneOf(["male", "female", "other"])
-      .required("Gender is required"),
-    password: Yup.string()
-      .matches(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
-        "Password must be at least 8 characters, include one uppercase letter, one lowercase letter, one number, and one special character"
-      )
-      .required("Password is required"),
-  });
+export default function SignUpPage() {
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      phone: "",
+      college: "",
+      password: "",
+      rememberMe: false,
+    },
+  })
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<FormValues>({
-    resolver: yupResolver(validationSchema),
-  });
-
-  const onSubmit = async (data: FormValues) => {
-    setIsSubmitting(true);
-    // Add your logic to handle form submission here
-    console.log(data);
-    setIsSubmitting(false);
-  };
+  function onSubmit(values: z.infer<typeof formSchema>) {
+    console.log(values)
+  }
 
   return (
-    <div
-      className="flex justify-center items-center h-screen w-full p-0 bg-cover bg-center bg-no-repeat"
-        
-      
-    >
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="bg-black bg-opacity-0 shadow-md rounded px-8 pt-6 pb-8 h-full w-full"
-      >
-        <h2 className="text-2xl text-gray-100 font-bold mb-6 text-center">
-          Sign Up
-        </h2>
-        <div className="mb-4">
-          <label
-            className="block text-gray-100 font-bold mb-2"
-            htmlFor="fullName"
-          >
-            Full Name
-          </label>
-          <input
-            className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-100 leading-tight focus:outline-none focus:shadow-outline ${
-              errors.fullName ? "border-red-500" : ""
-            }`}
-            id="fullName"
-            type="text"
-            placeholder="E.g. Arya Stark"
-            {...register("fullName")}
-          />
-          {errors.fullName && (
-            <p className="text-red-500 text-xs italic">
-              {errors.fullName.message}
-            </p>
-          )}
+    <div className="rounded-3xl h-full grid lg:grid-cols-2 overflow-y-scroll">
+      <div className="flex items-center justify-center p-6 bg-white">
+        {/* Overflow scroll. Scroll styles rounded pretty */}
+        <div className="w-full max-w-md space-y-6">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter your full name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter your email" type="email" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="phone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Phone Number</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter your contact no" type="tel" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="college"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>College</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter The College Name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Password</FormLabel>
+                    <FormControl>
+                      <Input placeholder="********" type="password" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="rememberMe"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center space-x-2 space-y-0">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <FormLabel className="text-sm font-normal">Remember me</FormLabel>
+                  </FormItem>
+                )}
+              />
+              <Button type="submit" className="w-full bg-red-500 hover:bg-red-600">
+                Sign Up
+              </Button>
+            </form>
+          </Form>
+          <div className="text-center text-sm">
+            Already Registered?{" "}
+            <Link href="/login" className="text-red-500 hover:underline">
+              Log in here!
+            </Link>
+          </div>
         </div>
-
-        <div className="mb-4">
-          <label
-            className="block text-gray-100 font-bold mb-2"
-            htmlFor="mobileNumber"
-          >
-            Mobile Number
-          </label>
-          <input
-            className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-100 leading-tight focus:outline-none focus:shadow-outline ${
-              errors.mobileNumber ? "border-red-500" : ""
-            }`}
-            id="mobileNumber"
-            type="tel"
-            placeholder="Eg. 9876543210"
-            {...register("mobileNumber")}
-          />
-          {errors.mobileNumber && (
-            <p className="text-red-500 text-xs italic">
-              {errors.mobileNumber.message}
-            </p>
-          )}
-        </div>
-
-        <div className="mb-4">
-          <label className="block text-gray-100 font-bold mb-2" htmlFor="email">
-            Email
-          </label>
-          <input
-            className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-100 leading-tight focus:outline-none focus:shadow-outline ${
-              errors.email ? "border-red-500" : ""
-            }`}
-            id="email"
-            type="email"
-            placeholder="E.g. winter@gmail.com"
-            {...register("email")}
-          />
-          {errors.email && (
-            <p className="text-red-500 text-xs italic">
-              {errors.email.message}
-            </p>
-          )}
-        </div>
-
-        <div className="mb-4">
-          <label
-            className="block text-gray-100 font-bold mb-2"
-            htmlFor="gender"
-          >
-            Gender
-          </label>
-          <select
-            className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-100 leading-tight focus:outline-none focus:shadow-outline ${
-              errors.gender ? "border-red-500" : ""
-            }`}
-            id="gender"
-            {...register("gender")}
-          >
-            <option value="">Select gender</option>
-            <option value="male">Male</option>
-            <option value="female">Female</option>
-            <option value="other">Others</option>
-          </select>
-          {errors.gender && (
-            <p className="text-red-500 text-xs italic">
-              {errors.gender.message}
-            </p>
-          )}
-        </div>
-
-        <div className="mb-6">
-          <label
-            className="block text-gray-100 font-bold mb-2"
-            htmlFor="password"
-          >
-            Password
-          </label>
-          <input
-            className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-100 leading-tight focus:outline-none focus:shadow-outline ${
-              errors.password ? "border-red-500" : ""
-            }`}
-            id="password"
-            type="password"
-            placeholder="E.g. Winter@123"
-            {...register("password")}
-          />
-          {errors.password && (
-            <p className="text-red-500 text-xs italic">
-              {errors.password.message}
-            </p>
-          )}
-        </div>
-
-        <div className="flex items-center justify-between">
-          <button
-            className="relative m-auto mt-8 group px-8 py-4 font-bold text-lg text-gray-100 bg-gradient-to-r from-gray-800 to-gray-600 rounded-[12px] shadow-[0_4px_8px_rgba(0,0,0,0.6)] border-[3px] border-gray-500 hover:border-yellow-500 transition-all duration-300 hover:scale-110"
-            type="submit"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? "Submitting..." : "Sign Up"}
-          </button>
-        </div>
-      </form>
+      </div>
+      <div 
+        className="hidden lg:block bg-[url('/iron-throne.png')] bg-cover bg-center bg-no-repeat"
+      />
     </div>
-  );
-};
+  )
+}
 
-export default SignUpForm;
